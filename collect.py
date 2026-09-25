@@ -412,6 +412,7 @@ def run(api, state, now, data_dir=None, index_path=None):
         items = crawl_catalog(api)  # A partial seed would mislabel old islands as new, so this must finish.
         known = write_seed(items, now, data_dir) | known
         write_index(items, index_path)
+        state["index_at"] = utc_text(now)
         # First keyword pass a couple of hours later, once rankings and daily stats exist.
         state["catalog_at"] = utc_text(now - timedelta(hours=config.CATALOG_EVERY_HOURS - 2))
         stats["catalog"] = "seed"
@@ -446,7 +447,7 @@ def run(api, state, now, data_dir=None, index_path=None):
 
     launches(due_launches(islands, stages, state, now)[0])
 
-    catalog_due = (not state.get("catalog_at") or not Path(index_path or config.CATALOG_INDEX).exists()
+    catalog_due = (not state.get("catalog_at") or not state.get("index_at") or not Path(index_path or config.CATALOG_INDEX).exists()
                    or parse_time(state["catalog_at"]) <= now - timedelta(hours=config.CATALOG_EVERY_HOURS))
     if catalog_due and api.has_time(150):
         try:
@@ -457,6 +458,7 @@ def run(api, state, now, data_dir=None, index_path=None):
             islands.extend(late)
             remember_meta(state, items, set(state.get("ranked", {}).get("codes", {})))
             write_index(items, index_path)
+            state["index_at"] = utc_text(now)
             append_rows("keywords", KEYWORD_FIELDS, keyword_rows(items, islands, state, now), now, data_dir)
             state["catalog_at"] = utc_text(now)
             stats["catalog"] = f"{len(items)} islands"

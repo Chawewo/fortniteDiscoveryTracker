@@ -150,7 +150,7 @@ class TrackerTest(unittest.TestCase):
 
     def test_missing_search_index_triggers_catalog_crawl(self):
         self.run_at(T0, [OLD])
-        (self.data / "catalog.json").unlink()
+        self.state.pop("index_at")  # An index file from elsewhere (e.g. a test fixture) must not count.
         _, stats = self.run_at(T0 + timedelta(minutes=15), [NEW, OLD])
         self.assertEqual("2 islands", stats["catalog"])
         self.assertEqual(2, len(json.loads((self.data / "catalog.json").read_text(encoding="utf-8"))))
@@ -161,7 +161,7 @@ class TrackerTest(unittest.TestCase):
                 if path.startswith("/genres/"):
                     return dict(meta=dict(total=0), data=[])
                 return super().get(path, **params)
-        collect.run(Empty([OLD]), self.state, T0, self.data)
+        collect.run(Empty([OLD]), self.state, T0, self.data, self.data / "catalog.json")
         self.assertEqual([], store.read_table("rankings", data_dir=self.data))
         self.assertTrue(all(h < store.utc_text(T0 - timedelta(hours=config.RANKING_GIVE_UP_HOURS)) for h in self.state["dead_rank_hours"]))
 
