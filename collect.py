@@ -446,8 +446,9 @@ def run(api, state, now, data_dir=None, index_path=None):
 
     launches(due_launches(islands, stages, state, now)[0])
 
-    if (not state.get("catalog_at") or parse_time(state["catalog_at"]) <= now - timedelta(hours=config.CATALOG_EVERY_HOURS)) \
-            and api.has_time(150):
+    catalog_due = (not state.get("catalog_at") or not Path(index_path or config.CATALOG_INDEX).exists()
+                   or parse_time(state["catalog_at"]) <= now - timedelta(hours=config.CATALOG_EVERY_HOURS))
+    if catalog_due and api.has_time(150):
         try:
             items = crawl_catalog(api)
             late = [island_row(item, now, "catalog") for item in items if item["code"] not in known]

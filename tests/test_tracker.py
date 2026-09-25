@@ -148,6 +148,13 @@ class TrackerTest(unittest.TestCase):
         self.assertEqual(({"24", "144"}, 120, [[pickup, 3, 80]]), (set(maps[NEW["code"]]["launch"]), maps[NEW["code"]]["launch"]["144"]["peak_ccu"], maps[NEW["code"]]["surges"]))
         self.assertEqual(["shooter", 1], maps[OLD["code"]]["rank"][:2])
 
+    def test_missing_search_index_triggers_catalog_crawl(self):
+        self.run_at(T0, [OLD])
+        (self.data / "catalog.json").unlink()
+        _, stats = self.run_at(T0 + timedelta(minutes=15), [NEW, OLD])
+        self.assertEqual("2 islands", stats["catalog"])
+        self.assertEqual(2, len(json.loads((self.data / "catalog.json").read_text(encoding="utf-8"))))
+
     def test_unpublished_rankings_are_retried_not_stored(self):
         class Empty(FakeAPI):
             def get(self, path, **params):
