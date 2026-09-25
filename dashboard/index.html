@@ -1,0 +1,106 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="dark light">
+  <meta name="description" content="When do new Fortnite Creative maps get picked up? Launch timing, Discover-style pickups, keyword demand and genre leaders from Epic's public data.">
+  <title>Drop Zone · Fortnite discovery tracker</title>
+  <link rel="stylesheet" href="style.css?v=1">
+  <script src="app.js?v=1" defer></script>
+</head>
+<body>
+  <main>
+    <header class="masthead">
+      <div class="brand"><span class="mark" aria-hidden="true">◆</span><span>DROP ZONE <small>FORTNITE DISCOVERY RADAR</small></span></div>
+      <button id="theme" class="quiet" aria-label="Switch color theme">◐ Theme</button>
+    </header>
+
+    <section class="intro">
+      <div><p class="eyebrow">WHEN TO PUBLISH</p><h1>Time the drop.</h1><p class="subtitle">Every new Creative map, followed through its first six days. Find the launch windows that get picked up.</p></div>
+      <div class="status"><span id="status-dot" class="dot"></span><span id="freshness">Connecting…</span><small id="tracking">Snapshots every ~15 minutes</small></div>
+    </section>
+
+    <section class="stats" aria-label="Collection summary">
+      <div><span>NEW MAPS · 24H</span><strong id="new24">—</strong><small id="new7">First seen in Epic's newest-first list</small></div>
+      <div><span>SUDDEN PICKUPS · 72H</span><strong id="pickcount">—</strong><small>Jumps to <b id="pickup-rule">50+</b> players</small></div>
+      <div><span>24-HOUR RESULTS</span><strong id="early">—</strong><small>Launches measured at 24 hours</small></div>
+      <div><span>6-DAY RESULTS</span><strong id="final">—</strong><small>Launches measured through day 6</small></div>
+    </section>
+
+    <section class="card" id="timing-card" aria-labelledby="timing-title">
+      <div class="card-heading"><h2 id="timing-title">Best time to publish</h2><span id="tz-note"></span></div>
+      <p class="lede">Each cell is the hour a map first appeared in Epic's public list (your local time). Darker means a larger share of those launches took off.</p>
+      <div class="controls">
+        <label>Measure <select id="timing-metric">
+          <option value="took24">Took off within 24h (%)</option>
+          <option value="pick24">Sudden pickup within 24h (%)</option>
+          <option value="took144">Took off within 6 days (%)</option>
+          <option value="pick144">Sudden pickup within 6 days (%)</option>
+          <option value="hours">Median hours to pickup (lower is better)</option>
+          <option value="volume">Launch volume</option>
+        </select></label>
+        <label>Maps <select id="timing-group"><option value="all">All maps</option></select></label>
+        <label>Minimum launches per cell <select id="timing-min"><option>3</option><option selected>5</option><option>10</option><option>25</option></select></label>
+      </div>
+      <div id="heatmap" class="heatmap" role="grid" aria-label="Launch outcome by weekday and hour"></div>
+      <div class="legend" id="heat-legend"></div>
+      <div id="best-slots" class="best-slots"></div>
+      <p class="empty" id="timing-empty" hidden></p>
+    </section>
+
+    <div class="two">
+      <section class="card" aria-labelledby="live-title">
+        <div class="card-heading"><h2 id="live-title">Launches taking off now</h2><span id="live-count"></span></div>
+        <p class="lede">Maps first seen in the last 7 days, ranked by peak players so far. <span class="pill">PICKUP</span> marks a sudden jump.</p>
+        <div class="controls"><label>Filter <input id="live-search" type="search" placeholder="Title, creator or tag" autocomplete="off"></label></div>
+        <div class="table-scroll"><table>
+          <thead><tr><th class="left">MAP</th><th>RELEASED</th><th>PEAK</th><th>NOW</th><th>PICKUP</th><th class="left">PLAYERS SINCE RELEASE</th></tr></thead>
+          <tbody id="live-rows"><tr><td colspan="6" class="empty">Loading…</td></tr></tbody>
+        </table></div>
+      </section>
+
+      <section class="card" aria-labelledby="pickup-title">
+        <div class="card-heading"><h2 id="pickup-title">Sudden pickups</h2><span>Last 72 hours</span></div>
+        <p class="lede">A jump to <b class="pickup-rule">50+</b> players at <b id="pickup-factor">4×</b> the previous hour almost always means a Discover row placed the map.</p>
+        <ol id="pickups" class="pickups"><li class="empty">Loading…</li></ol>
+      </section>
+    </div>
+
+    <section class="card" aria-labelledby="kw-title">
+      <div class="card-heading"><h2 id="kw-title">Keyword demand</h2><span id="kw-date"></span></div>
+      <p class="lede">Supply is how many public maps use a title word or tag. Demand is yesterday's unique players on ranked maps using it. High players per ranked map with few new maps is room to compete.</p>
+      <div class="controls">
+        <div class="segmented" role="group" aria-label="Keyword kind"><button data-kind="word" class="active" aria-pressed="true">Title words</button><button data-kind="tag" aria-pressed="false">Tags</button></div>
+        <label>Filter <input id="kw-search" type="search" placeholder="e.g. brainrot" autocomplete="off"></label>
+      </div>
+      <div class="table-scroll"><table>
+        <thead><tr><th class="left"><button data-kw-sort="term">TERM ↕</button></th><th><button data-kw-sort="islands">MAPS ↕</button></th><th><button data-kw-sort="new_7d">NEW · 7D ↕</button></th><th><button data-kw-sort="ranked">RANKED ↕</button></th><th><button data-kw-sort="players">PLAYERS · 1D ↕</button></th><th><button data-kw-sort="players_per_ranked">PER RANKED MAP ↕</button></th><th><button data-kw-sort="players_change">Δ PLAYERS · 7D ↕</button></th></tr></thead>
+        <tbody id="kw-rows"><tr><td colspan="7" class="empty">Loading…</td></tr></tbody>
+      </table></div>
+    </section>
+
+    <div class="two">
+      <section class="card" aria-labelledby="success-title">
+        <div class="card-heading"><h2 id="success-title">What winning launches share</h2><span>6-day results</span></div>
+        <p class="lede">Take-off and pickup rates by tag, build tool and tag count. Groups with at least 5 finished launches.</p>
+        <div class="controls"><label>Group <select id="success-kind"><option value="tag">Tags</option><option value="tool">Build tool</option><option value="tags">Number of tags</option></select></label></div>
+        <div class="table-scroll"><table>
+          <thead><tr><th class="left">GROUP</th><th>LAUNCHES</th><th>TOOK OFF</th><th>PICKED UP</th><th>MEDIAN PEAK</th></tr></thead>
+          <tbody id="success-rows"><tr><td colspan="5" class="empty">Loading…</td></tr></tbody>
+        </table></div>
+      </section>
+
+      <section class="card" aria-labelledby="genre-title">
+        <div class="card-heading"><h2 id="genre-title">Genre leaders</h2><span id="genre-hour"></span></div>
+        <p class="lede">Epic's hourly genre rankings (published a few hours late), with change over 24 hours.</p>
+        <div class="controls"><label>Genre <select id="genre"></select></label></div>
+        <ol id="genre-rows" class="leaders"><li class="empty">Loading…</li></ol>
+      </section>
+    </div>
+
+    <footer><span>DROP ZONE <span class="muted">/ Independent Fortnite Creative research</span></span><span>Data from Epic's public <a href="https://api.fortnite.com/ecosystem/v1/docs" target="_blank" rel="noopener noreferrer">Fortnite Data API</a> · Times shown locally</span></footer>
+  </main>
+  <div id="tooltip" class="tooltip" role="tooltip" hidden></div>
+</body>
+</html>

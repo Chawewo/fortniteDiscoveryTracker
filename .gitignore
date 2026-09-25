@@ -1,0 +1,6 @@
+__pycache__/
+*.pyc
+*.tmp
+.state/
+dashboard/data.json
+.scheduler.log
