@@ -238,7 +238,7 @@ function renderGenres() {
     const map = el('div', 'map');
     const link = el('a', '', r.title || r.code);
     link.href = `https://fortnite.gg/island?code=${encodeURIComponent(r.code)}`; link.target = '_blank'; link.rel = 'noopener noreferrer';
-    map.append(link, el('small', '', [r.creator, r.code].filter(Boolean).join(' · ')));
+    map.append(link, el('small', '', r.title ? [r.creator, r.code].filter(Boolean).join(' · ') : 'Title arrives on its next stats refresh'));
     const move = r.change > 0 ? el('span', 'move positive', `▲ ${r.change}`) : r.change < 0 ? el('span', 'move negative', `▼ ${-r.change}`)
       : el('span', 'move muted', r.new ? 'NEW' : leaders.compared_to ? '—' : '');
     item.append(el('span', 'rank', r.rank), map, move);

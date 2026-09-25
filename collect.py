@@ -460,7 +460,7 @@ def run(api, state, now, data_dir=None):
     est = state.get("est", {})
     stale = utc_text(now - timedelta(hours=config.ESTABLISHED_REFRESH_HOURS))
     queue = sorted((code for code in ranked if code not in launch_codes and est.get(code, {}).get("at", "") < stale),
-                   key=lambda code: est.get(code, {}).get("at", ""))
+                   key=lambda code: (est.get(code, {}).get("at", ""), ranked[code][1]))  # Stalest, then best ranked.
     meta = state.setdefault("meta", {})
     results = run_parallel(api, [(established_task, (code, now, code not in meta)) for code in queue], errors)
     since = utc_text(now - timedelta(days=8))[:10]
