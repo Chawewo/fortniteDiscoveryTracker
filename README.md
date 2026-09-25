@@ -1,6 +1,6 @@
 # Drop Zone — Fortnite discovery tracker
 
-Follows every new Fortnite Creative map through its first six days to find **when to publish** so a map gets picked up, **what successful launches share**, and **which title keywords draw players**.
+Follows every new Fortnite Creative map through its first six days to find **when to publish** so a map takes off, **what successful launches share**, and **which title keywords draw players**. The **map lookup** (`map.html`) shows any public map by island code, name or creator: live 7-day players, daily stats, retention and genre rank straight from Epic, plus everything this tracker recorded about it.
 
 **Dashboard:** https://chawewo.github.io/fortniteDiscoveryTracker/ (after the first successful Pages deployment).
 
@@ -31,7 +31,7 @@ Each run is time-boxed (~5.5 minutes) and paced at ~3 requests per second. Unfin
 ## Definitions
 
 - **Took off:** peak concurrent players reached 100 or more (`TRACTION_CCU`).
-- **Sudden pickup:** the first 10-minute bucket at 50+ players (`PICKUP_MIN_CCU`) and at least 4× (`PICKUP_FACTOR`) the previous hour's peak. A jump like that almost always means a Discover row placed the map. It is an inference, not Epic's Discover data.
+- **Player surge:** the first 10-minute bucket at 50+ players (`PICKUP_MIN_CCU`) and at least 4× (`PICKUP_FACTOR`) the previous hour's peak. It is measured from player counts only and does not say where the players came from (Discover, search, creator codes, social). Epic's public data has no Discover placements.
 - **Best time to publish:** launches grouped by the hour of the week they were first seen, shown in the viewer's local time. Cells with too few launches are hatched out. Give it a few weeks: each of the 168 hours needs several launches.
 - **Keyword demand:** for each title word, word pair or tag: how many maps use it (supply), how many are new this week, and yesterday's unique players on ranked maps using it (demand). "brain rot" also counts toward "brainrot".
 
@@ -44,13 +44,13 @@ Each run is time-boxed (~5.5 minutes) and paced at ~3 requests per second. Unfin
 | `islands/` | Every new island: first_seen, code, title, creator, tool, brand, tags, source |
 | `launches/` | Launch outcomes, `stage` 24 (early) and 144 (final) |
 | `curves/` | Hourly players and plays for launches that reached 50+ players |
-| `pickups/` | Sudden jumps, for launches and established maps |
+| `pickups/` | Player surges, for launches and established maps |
 | `rankings/` | Hourly genre top 50 |
 | `daily/` | Daily stats for ranked maps |
 | `keywords/` | Daily keyword and tag supply/demand |
 | `runs/` | One row per collection run |
 
-Working state (live checks, sparklines, titles of ranked maps) lives in `.state/`, which is kept in the GitHub Actions cache rather than committed. If it is lost, it rebuilds within a day; committed data is never rebuilt from it.
+Working state (live checks, sparklines, titles of ranked maps, and the map search index `catalog.json`) lives in `.state/`, which is kept in the GitHub Actions cache rather than committed. If it is lost, it rebuilds within a day; committed data is never rebuilt from it.
 
 ## Run locally
 
@@ -67,6 +67,6 @@ Tests use a fake API and never touch the network. Avoid running the live collect
 
 ## GitHub Actions and Pages
 
-Workflow `.github/workflows/track.yml` runs at minutes 7, 22, 37 and 52 (UTC), on manual dispatch, and on pushes that change code. It tests, collects, analyzes, commits `data/` with `[skip ci]`, and deploys `dashboard/` to Pages. Pages source must be **GitHub Actions**, and workflow permissions must allow writing.
+Workflow `.github/workflows/track.yml` runs at minutes 7, 22, 37 and 52 (UTC), on manual dispatch, and on pushes that change code. It tests, collects, analyzes, commits `data/` with `[skip ci]`, and deploys `dashboard/` to Pages. The published site also carries `data.json` (dashboard), `maps.json` (per-map tracker records, last 30 days plus ranked maps) and `catalog.json` (search index). The map page calls Epic's public API directly from the browser, which Epic allows. Pages source must be **GitHub Actions**, and workflow permissions must allow writing.
 
 GitHub's schedule is best effort: runs can be delayed, and public-repo schedules pause after 60 days without repository activity (the data commits count as activity).

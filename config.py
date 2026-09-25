@@ -4,6 +4,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent
 DATA_DIR = ROOT / "data"
 STATE_FILE = ROOT / ".state" / "state.json"  # Working state, restored from the Actions cache.
+CATALOG_INDEX = ROOT / ".state" / "catalog.json"  # Code, title, creator of every public map, for search.
 OUTPUT = ROOT / "dashboard" / "data.json"
 
 API = "https://api.fortnite.com/ecosystem/v1"
@@ -28,7 +29,7 @@ FINAL_AFTER_HOURS = 150     # Epic keeps 7 days, so finals must run between 150h
 ESTABLISHED_REFRESH_HOURS = 12
 
 TRACTION_CCU = 100          # "Took off": peak concurrent players reached in the window.
-PICKUP_MIN_CCU = 50         # Sudden jump to at least this many players...
+PICKUP_MIN_CCU = 50         # Player surge: a jump to at least this many players...
 PICKUP_FACTOR = 4           # ...and at least this many times the previous hour's peak.
 CURVE_MIN_PEAK = 50         # Hourly launch curves are committed only for islands this big.
 

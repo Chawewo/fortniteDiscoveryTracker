@@ -3,6 +3,7 @@ islands caught by the newest-first scan ('head'), whose first-seen time is accur
 from collections import Counter, defaultdict
 from datetime import datetime, timedelta, timezone
 import json
+import shutil
 from statistics import median
 
 import config
@@ -136,6 +137,33 @@ def keyword_table(keyword_rows):
                 words=words[:400] + sorted(words[400:], key=lambda r: -r["new_7d"])[:100])
 
 
+LAUNCH_KEYS = ["peak_ccu", "peak_at", "pickup_at", "hours_to_pickup", "plays", "minutes_played", "favorites",
+               "recommendations", "unique_players", "avg_minutes", "d1", "d7", "best_rank", "best_rank_genre"]
+
+
+def map_records(data_dir=None, state=None, now=None, days=30):
+    """Everything the tracker recorded per map, for the map page: release time, launch results,
+    player surges, latest genre rank. Covers recent launches, recent surges and ranked maps."""
+    now = now or datetime.now(timezone.utc)
+    state = load_state() if state is None else state
+    since = utc_text(now - timedelta(days=days))
+    records = {}
+    for row in read_table("islands", since[:7], data_dir):
+        if row["first_seen"] >= since:
+            records[row["code"]] = dict(first_seen=row["first_seen"], source=row["source"])
+    for row in read_table("launches", since[:7], data_dir):
+        if row["code"] in records:
+            records[row["code"]].setdefault("launch", {})[row["stage"]] = {k: number(row[k]) if k not in ("peak_at", "pickup_at", "best_rank_genre") else (row[k] or None) for k in LAUNCH_KEYS}
+    for row in read_table("pickups", since[:7], data_dir):
+        if row["at"] >= since:
+            records.setdefault(row["code"], {}).setdefault("surges", []).append([row["at"], number(row["ccu_before"]), number(row["ccu_after"])])
+    ranked = state.get("ranked", {})
+    for code, (genre, rank) in ranked.get("codes", {}).items():
+        records.setdefault(code, {})["rank"] = [genre, rank, ranked["hour"]]
+    return dict(generated_at=utc_text(now), tracking_since=min((r["started"] for r in read_table("runs", data_dir=data_dir)), default=None),
+                genres=dict(state.get("genres", {}).get("list", [])), maps=records)
+
+
 def analyze(data_dir=None, state=None, now=None):
     now = now or datetime.now(timezone.utc)
     state = load_state() if state is None else state
@@ -195,8 +223,12 @@ def analyze(data_dir=None, state=None, now=None):
 def main():
     result = analyze()
     atomic_write(config.OUTPUT, json.dumps(result, ensure_ascii=False, separators=(",", ":")) + "\n")
+    maps = map_records()
+    atomic_write(config.OUTPUT.with_name("maps.json"), json.dumps(maps, ensure_ascii=False, separators=(",", ":")))
+    if config.CATALOG_INDEX.exists():
+        shutil.copyfile(config.CATALOG_INDEX, config.OUTPUT.with_name("catalog.json"))
     print(f"Analyzed: {len(result['live'])} live launches, {result['launches_finished']} finished launches, "
-          f"{len(result['pickups'])} recent pickups")
+          f"{len(result['pickups'])} recent surges, {len(maps['maps'])} map records")
 
 
 if __name__ == "__main__":

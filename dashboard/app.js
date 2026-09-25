@@ -27,11 +27,11 @@ function ago(stamp) {
 function localTime(stamp) {
   return new Date(stamp).toLocaleString([], {weekday: 'short', hour: 'numeric', minute: '2-digit'});
 }
+const mapPage = code => `map.html?code=${encodeURIComponent(code)}`;
 function islandLink(code, title, creator) {
   const cell = el('td', 'map');
   const link = el('a', '', title || code);
-  link.href = `https://fortnite.gg/island?code=${encodeURIComponent(code)}`;
-  link.target = '_blank'; link.rel = 'noopener noreferrer';
+  link.href = mapPage(code);
   cell.append(link, el('small', '', [creator, code].filter(Boolean).join(' · ')));
   return cell;
 }
@@ -52,10 +52,10 @@ const hideTip = () => { tooltip.hidden = true; };
 // ---------- best time to publish ----------
 const METRICS = {
   took24: {n: c => c[0], v: c => c[0] ? c[1] / c[0] : null, label: 'took off within 24h', pct: true},
-  pick24: {n: c => c[0], v: c => c[0] ? c[2] / c[0] : null, label: 'sudden pickup within 24h', pct: true},
+  pick24: {n: c => c[0], v: c => c[0] ? c[2] / c[0] : null, label: 'player surge within 24h', pct: true},
   took144: {n: c => c[3], v: c => c[3] ? c[4] / c[3] : null, label: 'took off within 6 days', pct: true},
-  pick144: {n: c => c[3], v: c => c[3] ? c[5] / c[3] : null, label: 'sudden pickup within 6 days', pct: true},
-  hours: {n: c => c[5], v: c => c[6], label: 'median hours to pickup', lowerIsBetter: true},
+  pick144: {n: c => c[3], v: c => c[3] ? c[5] / c[3] : null, label: 'player surge within 6 days', pct: true},
+  hours: {n: c => c[5], v: c => c[6], label: 'median hours to first surge', lowerIsBetter: true},
   volume: {n: c => c[0], v: c => c[0], label: 'launches measured at 24h', count: true},
 };
 function renderTiming() {
@@ -150,7 +150,7 @@ function renderLive() {
   for (const item of rows.slice(0, 120)) {
     const row = tbody.insertRow();
     const map = islandLink(item.code, item.title, item.creator);
-    if (item.pickup) map.querySelector('a').append(el('span', 'pill', 'PICKUP'));
+    if (item.pickup) map.querySelector('a').append(el('span', 'pill', 'SURGE'));
     if (item.source === 'catalog') map.querySelector('small').append(' · found late');
     const released = el('td', '', ago(item.first_seen)); released.title = localTime(item.first_seen);
     const pickupHours = item.pickup ? (Date.parse(item.pickup) - Date.parse(item.first_seen)) / 3600e3 : null;
@@ -166,12 +166,12 @@ function renderLive() {
 function renderPickups() {
   const list = $('#pickups');
   const rows = data.pickups || [];
-  if (!rows.length) { list.replaceChildren(el('li', 'empty', 'No sudden jumps detected yet. They show up as new and ranked maps get checked.')); return; }
+  if (!rows.length) { list.replaceChildren(el('li', 'empty', 'No player surges yet. They show up as new and ranked maps get checked.')); return; }
   list.replaceChildren(...rows.slice(0, 80).map(row => {
     const item = el('li');
     const map = el('div', 'map');
     const link = el('a', '', row.title || row.code);
-    link.href = `https://fortnite.gg/island?code=${encodeURIComponent(row.code)}`; link.target = '_blank'; link.rel = 'noopener noreferrer';
+    link.href = mapPage(row.code);
     map.append(link, el('small', '', row.kind === 'launch' ? `New map · ${row.age_hours}h after release` : `Established map · ${row.creator || row.code}`));
     const jump = el('div', 'jump', `${fmt.format(row.ccu_before)} → ${fmt.format(row.ccu_after)}`);
     jump.append(el('small', '', 'players'));
@@ -237,7 +237,7 @@ function renderGenres() {
     const item = el('li');
     const map = el('div', 'map');
     const link = el('a', '', r.title || r.code);
-    link.href = `https://fortnite.gg/island?code=${encodeURIComponent(r.code)}`; link.target = '_blank'; link.rel = 'noopener noreferrer';
+    link.href = mapPage(r.code);
     map.append(link, el('small', '', r.title ? [r.creator, r.code].filter(Boolean).join(' · ') : 'Title arrives on its next stats refresh'));
     const move = r.change > 0 ? el('span', 'move positive', `▲ ${r.change}`) : r.change < 0 ? el('span', 'move negative', `▼ ${-r.change}`)
       : el('span', 'move muted', r.new ? 'NEW' : leaders.compared_to ? '—' : '');

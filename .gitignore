@@ -4,3 +4,5 @@ __pycache__/
 .state/
 dashboard/data.json
 .scheduler.log
+dashboard/maps.json
+dashboard/catalog.json

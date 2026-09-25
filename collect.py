@@ -1,5 +1,6 @@
 """One collection run against Epic's public API. Committed data is append-only; the working
 state (live checks, sparklines, island metadata) lives in .state/ and is rebuilt if lost."""
+import json
 import re
 from collections import Counter
 from concurrent.futures import ThreadPoolExecutor
@@ -56,6 +57,12 @@ def crawl_catalog(api):
     for page in api.pages("/islands", size=config.LIST_PAGE_SIZE):
         items.extend(item for item in page if item.get("code"))
     return items
+
+
+def write_index(items, path=None):
+    """Search index for the dashboard: [code, title, creator] for every public map."""
+    rows = [[item["code"], (item.get("title") or "").strip(), item.get("creatorCode") or ""] for item in items]
+    atomic_write(path or config.CATALOG_INDEX, json.dumps(rows, ensure_ascii=False, separators=(",", ":")))
 
 
 def write_seed(items, now, data_dir=None):
@@ -396,7 +403,7 @@ def run_parallel(api, tasks, errors):
         return [r for r in pool.map(guarded, tasks) if r is not None]
 
 
-def run(api, state, now, data_dir=None):
+def run(api, state, now, data_dir=None, index_path=None):
     stats = dict(new_islands=0, catalog="", rank_hours=0, launch_checks=0, finals=0, established=0)
     notes, errors = [], []
     known = known_codes(data_dir)
@@ -404,6 +411,7 @@ def run(api, state, now, data_dir=None):
     if not seed_path(data_dir).exists():
         items = crawl_catalog(api)  # A partial seed would mislabel old islands as new, so this must finish.
         known = write_seed(items, now, data_dir) | known
+        write_index(items, index_path)
         # First keyword pass a couple of hours later, once rankings and daily stats exist.
         state["catalog_at"] = utc_text(now - timedelta(hours=config.CATALOG_EVERY_HOURS - 2))
         stats["catalog"] = "seed"
@@ -447,6 +455,7 @@ def run(api, state, now, data_dir=None):
             stats["new_islands"] += append_rows("islands", ISLAND_FIELDS, late, now, data_dir)
             islands.extend(late)
             remember_meta(state, items, set(state.get("ranked", {}).get("codes", {})))
+            write_index(items, index_path)
             append_rows("keywords", KEYWORD_FIELDS, keyword_rows(items, islands, state, now), now, data_dir)
             state["catalog_at"] = utc_text(now)
             stats["catalog"] = f"{len(items)} islands"

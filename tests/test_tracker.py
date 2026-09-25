@@ -1,4 +1,5 @@
 """Synthetic end-to-end runs against a fake Epic API; no network calls."""
+import json
 import tempfile
 import unittest
 from datetime import datetime, timedelta, timezone
@@ -80,7 +81,7 @@ class TrackerTest(unittest.TestCase):
 
     def run_at(self, moment, catalog):
         api = FakeAPI(catalog)
-        stats, notes = collect.run(api, self.state, moment, self.data)
+        stats, notes = collect.run(api, self.state, moment, self.data, self.data / "catalog.json")
         self.assertEqual([], [n for n in notes if "error" in n])
         return api, stats
 
@@ -111,6 +112,7 @@ class TrackerTest(unittest.TestCase):
         self.assertEqual("seed", stats["catalog"])
         self.assertIn(OLD["code"], (self.data / "seed_codes.txt").read_text())
         self.assertEqual([], store.read_table("islands", data_dir=self.data))
+        self.assertEqual([[OLD["code"], OLD["title"], OLD["creatorCode"]]], json.loads((self.data / "catalog.json").read_text(encoding="utf-8")))
 
         _, stats = self.run_at(T1, [NEW, OLD])
         islands = store.read_table("islands", data_dir=self.data)
@@ -142,6 +144,9 @@ class TrackerTest(unittest.TestCase):
         self.assertEqual([1, 1, 1, 1, 1, 1, 3.1, 120], cell)
         self.assertEqual({"all", "UEFN", "tag:tycoon", "tag:simulator"}, set(result["timing"]))
         self.assertEqual("Shooter", result["leaders"]["genres"][0]["name"])
+        maps = analyze.map_records(self.data, self.state, T1 + timedelta(hours=152))["maps"]
+        self.assertEqual(({"24", "144"}, 120, [[pickup, 3, 80]]), (set(maps[NEW["code"]]["launch"]), maps[NEW["code"]]["launch"]["144"]["peak_ccu"], maps[NEW["code"]]["surges"]))
+        self.assertEqual(["shooter", 1], maps[OLD["code"]]["rank"][:2])
 
     def test_unpublished_rankings_are_retried_not_stored(self):
         class Empty(FakeAPI):

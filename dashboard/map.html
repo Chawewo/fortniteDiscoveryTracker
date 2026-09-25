@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="dark light">
+  <meta name="description" content="One Fortnite Creative map: release time, launch results, player surges, and the last 7 days of players from Epic's public data.">
+  <title>Map · Drop Zone</title>
+  <link rel="stylesheet" href="style.css?v=3">
+  <script src="search.js?v=1" defer></script>
+  <script src="map.js?v=1" defer></script>
+</head>
+<body>
+  <main>
+    <header class="masthead">
+      <a class="brand" href="./"><span class="mark" aria-hidden="true">◆</span><span>DROP ZONE <small>FORTNITE DISCOVERY RADAR</small></span></a>
+      <div class="masthead-actions"><a class="quiet" href="./">← Dashboard</a><button id="theme" class="quiet" aria-label="Switch color theme">◐ Theme</button></div>
+    </header>
+
+    <section class="card search-card" aria-label="Look up a map">
+      <form id="map-search" class="search" role="search">
+        <label for="map-query">Look up a map</label>
+        <input id="map-query" type="search" placeholder="Island code (1234-5678-9012), map name or creator" autocomplete="off">
+      </form>
+      <ul id="search-results" class="search-results"></ul>
+    </section>
+
+    <section class="map-head" id="map-head" aria-live="polite">
+      <p class="eyebrow" id="map-code">MAP</p>
+      <h1 id="map-title">Loading…</h1>
+      <p class="subtitle" id="map-meta"></p>
+      <div class="tags" id="map-tags"></div>
+      <p class="links" id="map-links"></p>
+    </section>
+
+    <section class="stats" aria-label="Last 24 hours">
+      <div><span>PEAK PLAYERS · 24H</span><strong id="s-peak">—</strong><small id="s-peak-note">Highest 10-minute peak</small></div>
+      <div><span>PLAYS · 24H</span><strong id="s-plays">—</strong><small>Game sessions started</small></div>
+      <div><span>UNIQUE PLAYERS · LAST DAY</span><strong id="s-unique">—</strong><small id="s-unique-note">Latest full UTC day</small></div>
+      <div><span>RETENTION · D1 / D7</span><strong id="s-retention">—</strong><small id="s-minutes">Average minutes per player</small></div>
+    </section>
+
+    <section class="card" aria-labelledby="chart-title">
+      <div class="card-heading"><h2 id="chart-title">Concurrent players</h2>
+        <div class="segmented" role="group" aria-label="Time range"><button data-range="day" aria-pressed="false">24 hours</button><button data-range="week" class="active" aria-pressed="true">7 days</button></div>
+      </div>
+      <p class="lede" id="chart-note">Peak players per hour from Epic's public data. Dashed lines mark when our tracker first saw the map and any player surges.</p>
+      <div id="chart" class="chart" role="img" aria-label="Concurrent players over time"></div>
+      <p class="empty" id="chart-empty" hidden></p>
+    </section>
+
+    <div class="two">
+      <section class="card" aria-labelledby="tracker-title">
+        <div class="card-heading"><h2 id="tracker-title">From our tracker</h2><span id="tracker-since"></span></div>
+        <div id="tracker"><p class="empty">Loading…</p></div>
+      </section>
+      <section class="card" aria-labelledby="rank-title">
+        <div class="card-heading"><h2 id="rank-title">Genre rank</h2><span>Epic's hourly rankings · 7 days</span></div>
+        <ol id="ranks" class="leaders"><li class="empty">Loading…</li></ol>
+      </section>
+    </div>
+
+    <section class="card" aria-labelledby="daily-title">
+      <div class="card-heading"><h2 id="daily-title">Daily stats</h2><span>UTC days · Epic keeps 7</span></div>
+      <div class="table-scroll"><table>
+        <thead><tr><th class="left">DAY</th><th>PEAK</th><th>PLAYS</th><th>UNIQUE</th><th>AVG MIN</th><th>FAVORITES</th><th>RECOMMENDS</th><th>D1</th><th>D7</th></tr></thead>
+        <tbody id="daily"><tr><td colspan="9" class="empty">Loading…</td></tr></tbody>
+      </table></div>
+    </section>
+
+    <footer><span>DROP ZONE <span class="muted">/ Independent Fortnite Creative research</span></span><span>Live data from Epic's public <a href="https://api.fortnite.com/ecosystem/v1/docs" target="_blank" rel="noopener noreferrer">Fortnite Data API</a> · Times shown locally</span></footer>
+  </main>
+  <div id="tooltip" class="tooltip" role="tooltip" hidden></div>
+</body>
+</html>
