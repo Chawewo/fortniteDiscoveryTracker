@@ -114,6 +114,7 @@ function renderTracker(tracked, meta) {
     ? 'First seen in Epic\'s newest-first list; accurate to about 15 minutes.' : 'Found by the daily crawl, so this time can be up to a day late.');
   if (tracked.rank) fact('Genre rank', `#${tracked.rank[1]} in ${genreName(tracked.rank[0])}`, `Snapshot ${when(tracked.rank[2])}`);
   parts.push(facts);
+  if (!tracked.first_seen) parts.push(el('p', 'lede', 'This map was public before tracking began, so it has no launch record. It is followed as a ranked map: genre rank and player surges.'));
   const launch = tracked.launch || {};
   if (launch['24'] || launch['144']) {
     const table = el('table');
