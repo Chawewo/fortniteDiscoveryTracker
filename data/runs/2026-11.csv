@@ -33,3 +33,4 @@ started,finished,requests,retries,new_islands,catalog,rank_hours,launch_checks,f
 2026-11-08T19:38:59Z,2026-11-08T19:44:30Z,991,0,161,,6,631,109,56,2262 established islands waiting
 2026-11-08T23:13:17Z,2026-11-08T23:18:49Z,991,0,101,,6,385,0,176,2153 established islands waiting
 2026-11-09T02:45:37Z,2026-11-09T02:51:08Z,991,0,35,,5,685,220,4,2281 established islands waiting
+2026-11-09T10:26:46Z,2026-11-09T10:32:17Z,975,0,84,286358 islands,6,401,124,38,2347 established islands waiting
